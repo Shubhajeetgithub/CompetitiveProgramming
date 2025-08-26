@@ -16,15 +16,14 @@ void solve() {
     debug(n);
     int x;
     int max = -1, maxId = -1;
-    unordered_map<int, int> mp;
+    vector<int> mp(n+1, 0);
     for (int i = 1; i <= n; i++) {
       cout << "? " << i << " " << n << " ";
       for (int j = 1; j <= n; j++) {
         cout << j;
         if (j != n) cout << " ";
       }
-      cout << endl;
-      fflush(stdout);
+      cout << endl << flush;
       cin >> x;
       if (x <= 0) return;
       debug(x);
@@ -38,8 +37,7 @@ void solve() {
     }
     if (max < 1) return;
     if (max == 1) {
-      cout << "! 1 1\n";
-      fflush(stdout);
+      cout << "! 1 1\n" << flush;
       return;
     }
     else {
@@ -48,29 +46,30 @@ void solve() {
       int j = maxId;
       int count = 0;
       while (count < max - 1) {
-      for (int i = 1; i <= n; i++) {
-        if (mp[i] == mp[j] - 1) {
-          cout << "? " << j << " 2 "  << j << " " << i << endl;
-          fflush(stdout);
-          cin >> x;
-          if (x <= 0) return;
-          if (x == 2) {
-            ans.push_back(i); 
-            count++; 
-            j = i;
-            break;
-          }
+        bool progress = false;
+        for (int i = 1; i <= n; i++) {
+          if (mp[i] == mp[j] - 1) {
+            cout << "? " << j << " 2 "  << j << " " << i << endl << flush;
+            cin >> x;
+            if (x <= 0) return;
+            if (x == 2) {
+              ans.push_back(i); 
+              count++;
+              progress = true; 
+              j = i;
+              break;
+            }
 
+          }
         }
-      }
+        if (!progress) break;
       }
       cout << "! " << ans.size();
       for (int a : ans) {
         cout << " " << a;
       }
       
-      cout << endl;
-      fflush(stdout);
+      cout << endl << flush;
     }
 }
 

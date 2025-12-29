@@ -59,6 +59,36 @@ int rightmost = n & -n;  // isolates the lowest set bit
 n = n & (n - 1);  // removes the lowest set bit
 int modulo = n & ((1 << k) - 1);  // n % (2^k)
 ```
+5) COMBINATORICS
+```cpp
+const int M = 998244353;
+ll modPow(ll a, ll b) {
+    ll res = 1;
+    while (b > 0) {
+        if (b & 1) res = (res * a) % M;
+        a = (a * a) % M;
+        b >>= 1;
+    }
+    return res;
+}
+
+ll inv(ll x) {
+    return modPow(x, M - 2);    
+}
+
+ll divide(ll x, ll y) {
+    return (x * inv(y)) % M;
+}
+
+ll nCr(int n, int r) {
+    if (r < 0 || r > n) return 0;
+    ll ans = 1;
+    for (int i = r; i >= 1; i--) {
+        ans = (ans * divide(n + i - r, i)) % M;
+    }
+    return ans;
+}
+```
 
 # STL
 
@@ -448,32 +478,30 @@ public:
 // Sparse Table for static GCD (O(n log n) build, O(1) query)
 template<typename T>
 class SparseTableGCD {
-    vector<vector<T>> st;
-    vector<int> lg;
-    
-    T gcd(T a, T b) { return b ? gcd(b, a % b) : a; }
-    
+    vector<vector<T>> st;
+    vector<int> lg;
+    T gcd(T a, T b) { return b ? gcd(b, a % b) : a; }
 public:
-    SparseTableGCD(const vector<T>& arr) {
-        int n = arr.size();
-        int k = __lg(n) + 1;
-        st.assign(k, vector<T>(n));
-        lg.assign(n + 1, 0);
-        
-        for (int i = 2; i <= n; i++) lg[i] = lg[i/2] + 1;
-        
-        st[0] = arr;
-        for (int i = 1; i < k; i++) {
-            for (int j = 0; j + (1 << i) <= n; j++) {
-                st[i][j] = gcd(st[i-1][j], st[i-1][j + (1 << (i-1))]);
-            }
-        }
-    }
-    
-    T query(int l, int r) {
-        int i = lg[r - l + 1];
-        return gcd(st[i][l], st[i][r - (1 << i) + 1]);
-    }
+    SparseTableGCD(const vector<T>& arr) {
+        int n = arr.size();
+        int k = n > 0 ? __lg(n) + 1 : 0;
+        st.assign(k, vector<T>(n));
+        lg.assign(max(1, n) + 1, 0);
+        if (n == 0) return;
+        for (int i = 2; i <= n; i++) lg[i] = lg[i/2] + 1;
+        st[0] = arr;
+        for (int i = 1; i < k; i++) {
+            for (int j = 0; j + (1 << i) <= n; j++) {
+                st[i][j] = gcd(st[i-1][j], st[i-1][j + (1 << (i-1))]);
+            }
+        }
+    }
+    T query(int l, int r) {
+        if (st.empty()) return T(0);
+        int len = r - l + 1;
+        int i = lg[len];
+        return gcd(st[i][l], st[i][r - (1 << i) + 1]);
+    }
 };
 
 // Segment Tree for dynamic GCD (O(n) build, O(log n) query/update)
@@ -676,6 +704,10 @@ cout << " After update arr[0]=15: OR[0,6] = " << seg_or.query(0, 6) << "\n";`
 1) (a + b) and (a ^ b) have the same parity (AND and XOR share the same parity)
 2) Manhattan distance property: if b lies between a and c, then MANH(a, b) + MANH(b, c) = MANH(a, c)
 3) k bitstring (i.e., count of 0s and 1s are equal in every window of size k) -> can be represented as ss...ss' where s.size() == k and s' is a prefix of s
+4) A periodic string that is palindromic is piecewise palindromic.
+
+# Other concepts
+## Difference array
 
 # Other templates
 ### Inversion count -> Merge sort -> O(NlogN)
@@ -801,4 +833,3 @@ vector<Interval> mergeIntervals(vector<Interval>& intervals) {
     return merged;
 }
 ```
-

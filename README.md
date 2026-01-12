@@ -89,7 +89,59 @@ ll nCr(int n, int r) {
     return ans;
 }
 ```
-
+6) MOD questions
+```cpp
+using ll = long long;
+#define MOD 998244353
+struct Mint {
+    int value;
+    static const int MOD_value = MOD;
+    Mint(ll v = 0) {
+        value = int(v % MOD);
+        if (value < 0) value += MOD;
+    }
+    Mint(ll a, ll b) : value(0) {
+        *this += a;
+        *this /= b;
+    }
+    Mint& operator+=(Mint const& b) {
+        value += b.value;
+        if (value >= MOD) value -= MOD;
+        return *this;
+    }
+    Mint& operator-=(Mint const& b) {
+        value -= b.value;
+        if (value < 0) value += MOD;
+        return *this;
+    }
+    Mint& operator*=(Mint const& b) {
+        value = int((ll)value * b.value % MOD);
+        return *this;
+    }
+    Mint& operator/=(Mint const& b) { return *this *= inverse(b); }
+    friend Mint mexp(Mint a, ll e) {
+        Mint res = 1;
+        while (e) {
+            if (e & 1) res *= a;
+            a *= a;
+            e >>= 1;
+        }
+        return res;
+    }
+    friend Mint inverse(Mint a) { return mexp(a, MOD - 2); }
+    friend Mint operator+(Mint a, Mint const& b) { return a += b; }
+    friend Mint operator-(Mint a, Mint const& b) { return a -= b; }
+    friend Mint operator*(Mint a, Mint const& b) { return a *= b; }
+    friend Mint operator/(Mint a, Mint const& b) { return a /= b; }
+    Mint& operator++() { return *this += 1; }        // pre-increment
+    Mint operator++(int) { Mint tmp = *this; ++(*this); return tmp; } // post-increment
+    Mint& operator--() { return *this -= 1; }        // pre-decrement
+    Mint operator--(int) { Mint tmp = *this; --(*this); return tmp; } // post-decrement
+    friend bool operator==(Mint const& a, Mint const& b) { return a.value == b.value; }
+    friend bool operator!=(Mint const& a, Mint const& b) { return a.value != b.value; }
+    friend std::ostream& operator<<(std::ostream& os, Mint const& a) { return os << a.value; }
+};
+```
 # STL
 
 ### List
@@ -225,6 +277,14 @@ for (int i = 2; i < N; i++) {
 	for (int j = i; j < N; j += i) divisors[j].push_back(i);
 }
 ```
+Note that when we are only interested in number of divisors, instead of writing .size(), write this code
+```cpp
+std::vector<int> D(N);
+for (int i = 1; i < N; i++) {
+    for (int j = 2*i; j < N; j += i) D[j]++;
+}
+```
+this is because `push_back` operation requires reallocation and copying, thus having large constant factor.
 #### Multiples
 ```cpp
 int hsh[N];
@@ -704,7 +764,8 @@ cout << " After update arr[0]=15: OR[0,6] = " << seg_or.query(0, 6) << "\n";`
 1) (a + b) and (a ^ b) have the same parity (AND and XOR share the same parity)
 2) Manhattan distance property: if b lies between a and c, then MANH(a, b) + MANH(b, c) = MANH(a, c)
 3) k bitstring (i.e., count of 0s and 1s are equal in every window of size k) -> can be represented as ss...ss' where s.size() == k and s' is a prefix of s
-4) A periodic string that is palindromic is piecewise palindromic.
+4) A `periodic` string that is palindromic is `piecewise` palindromic.
+5) To find the kth number after performing some deletions in the sequence 1, 2, ... M, express the number of terms left in the sequence 1,2 .., p as f(p) and using `binary search` find the smallest k such that `f(p) = k`.
 
 # Other concepts
 ## Difference array

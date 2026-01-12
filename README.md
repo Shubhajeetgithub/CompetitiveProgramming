@@ -91,55 +91,56 @@ ll nCr(int n, int r) {
 ```
 6) MOD questions
 ```cpp
+#include <iostream>
 using ll = long long;
 #define MOD 998244353
 struct Mint {
-    int value;
-    static const int MOD_value = MOD;
-    Mint(ll v = 0) {
-        value = int(v % MOD);
-        if (value < 0) value += MOD;
-    }
-    Mint(ll a, ll b) : value(0) {
-        *this += a;
-        *this /= b;
-    }
-    Mint& operator+=(Mint const& b) {
-        value += b.value;
-        if (value >= MOD) value -= MOD;
-        return *this;
-    }
-    Mint& operator-=(Mint const& b) {
-        value -= b.value;
-        if (value < 0) value += MOD;
-        return *this;
-    }
-    Mint& operator*=(Mint const& b) {
-        value = int((ll)value * b.value % MOD);
-        return *this;
-    }
-    Mint& operator/=(Mint const& b) { return *this *= inverse(b); }
-    friend Mint mexp(Mint a, ll e) {
-        Mint res = 1;
-        while (e) {
-            if (e & 1) res *= a;
-            a *= a;
-            e >>= 1;
-        }
-        return res;
-    }
-    friend Mint inverse(Mint a) { return mexp(a, MOD - 2); }
-    friend Mint operator+(Mint a, Mint const& b) { return a += b; }
-    friend Mint operator-(Mint a, Mint const& b) { return a -= b; }
-    friend Mint operator*(Mint a, Mint const& b) { return a *= b; }
-    friend Mint operator/(Mint a, Mint const& b) { return a /= b; }
-    Mint& operator++() { return *this += 1; }        // pre-increment
-    Mint operator++(int) { Mint tmp = *this; ++(*this); return tmp; } // post-increment
-    Mint& operator--() { return *this -= 1; }        // pre-decrement
-    Mint operator--(int) { Mint tmp = *this; --(*this); return tmp; } // post-decrement
-    friend bool operator==(Mint const& a, Mint const& b) { return a.value == b.value; }
-    friend bool operator!=(Mint const& a, Mint const& b) { return a.value != b.value; }
-    friend std::ostream& operator<<(std::ostream& os, Mint const& a) { return os << a.value; }
+    int value;
+    static const int MOD_value = MOD;
+    Mint(ll v = 0) {
+        value = int(v % MOD);
+        if (value < 0) value += MOD;
+    }
+    Mint(ll a, ll b) : value(0) {
+        *this += a;
+        *this /= b;
+    }
+    Mint& operator+=(Mint const& b) {
+        value += b.value;
+        if (value >= MOD) value -= MOD;
+        return *this;
+    }
+    Mint& operator-=(Mint const& b) {
+        value -= b.value;
+        if (value < 0) value += MOD;
+        return *this;
+    }
+    Mint& operator*=(Mint const& b) {
+        value = int((ll)value * b.value % MOD);
+        return *this;
+    }
+    Mint& operator/=(Mint const& b) { return *this *= inverse(b); }
+    friend Mint mexp(Mint a, ll e) {
+        Mint res = 1;
+        while (e) {
+            if (e & 1) res *= a;
+            a *= a;
+            e >>= 1;
+        }
+        return res;
+    }
+    friend Mint inverse(Mint a) { return mexp(a, MOD - 2); }
+    friend Mint operator+(Mint a, Mint const& b) { return a += b; }
+    friend Mint operator-(Mint a, Mint const& b) { return a -= b; }
+    friend Mint operator*(Mint a, Mint const& b) { return a *= b; }
+    friend Mint operator/(Mint a, Mint const& b) { return a /= b; }
+    Mint& operator++() { return *this += 1; }        // pre-increment
+    Mint operator++(int) { Mint tmp = *this; ++(*this); return tmp; } // post-increment
+    Mint& operator--() { return *this -= 1; }        // pre-decrement
+    Mint operator--(int) { Mint tmp = *this; --(*this); return tmp; } // post-decrement
+    friend bool operator==(Mint const& a, Mint const& b) { return a.value == b.value; }
+    friend bool operator!=(Mint const& a, Mint const& b) { return a.value != b.value; }
+    friend std::ostream& operator<<(std::ostream& os, Mint const& a) { return os << a.value; }
 };
 ```
 # STL

@@ -767,9 +767,195 @@ cout << " After update arr[0]=15: OR[0,6] = " << seg_or.query(0, 6) << "\n";`
 3) k bitstring (i.e., count of 0s and 1s are equal in every window of size k) -> can be represented as ss...ss' where s.size() == k and s' is a prefix of s
 4) A `periodic` string that is palindromic is `piecewise` palindromic.
 5) To find the kth number after performing some deletions in the sequence 1, 2, ... M, express the number of terms left in the sequence 1,2 .., p as f(p) and using `binary search` find the smallest k such that `f(p) = k`.
-
+6) To add the same number to a range of elements a_l, a_l+1, ..., a_r use `difference array` trick.
+7) To find the greatest j such that `a[j] >= a[i]` and `j < i` or the smallest j such that `a[j] < a[i]` and `j > i` use `Monotonic stack`. 
+```cpp
+for (int i = 0; i < n; i++) {
+	if (st.empty()) st.push(i);
+	else {
+		while (!st.empty() && a[st.top()] < a[i]) st.pop();
+		if (!st.empty()) l[i] = st.top();
+		st.push(i);
+	}
+}
+```
+8) `a[r[i]] > a[i], a[l[i]] >= a[i]` , no. of subsegments with `a[i] max = (i-l[i]) * (r[i]-i)` . `l` and `r` can be found using monotonic stack.
+9) **sum of max values over all subsegments** = $\sum_{i=0}^{n}$ `a[i] * (# subsegments where a[i] is max)` = $\sum_{i=0}^{n}a[i]*(i-l[i])*(r[i]-i)$
+10) Maximum XOR over given numbers -> `XOR Trie`.
+```cpp
+struct TrieNode {
+    TrieNode* child[2];
+    int leaf_cnt;
+    TrieNode() {
+        leaf_cnt = 0;
+        child[0] = nullptr;
+        child[1] = nullptr;
+    }
+};
+class Trie {
+private:
+    TrieNode* root;
+public:
+    Trie() {
+        root = new TrieNode();
+    }
+    // assuming 32 bit int
+    void insert(const int& x) {
+        TrieNode* cur = root;
+        for (int i = 31; i >= 0; i--) {
+            int bit = (x >> i) & 1;
+            if (!cur->child[bit])
+                cur->child[bit] = new TrieNode();
+            cur = cur->child[bit];
+        }
+        (cur->leaf_cnt)++;
+    }
+    void remove(const int& x) {
+        TrieNode* cur = root;
+        TrieNode* path[32];  // store path for backtracking
+        int bits[32];        // store bits along the path 
+        for (int i = 31; i >= 0; i--) {
+            int bit = (x >> i) & 1;
+            if (!cur->child[bit]) return; // x not present
+            path[i] = cur;                // parent at this level
+            bits[i] = bit;
+            cur = cur->child[bit];
+        }
+        cur->leaf_cnt--;
+        // cleanup if leaf_cnt == 0
+        if (cur->leaf_cnt == 0) {
+            for (int i = 0; i <= 31; i++) {
+                TrieNode* parent = path[i];
+                int bit = bits[i];
+                TrieNode* node = parent->child[bit];
+                // only delete if node has no children and leaf_cnt == 0
+                if (node->leaf_cnt == 0 && !node->child[0] && !node->child[1]) {
+                    delete node;
+                    parent->child[bit] = nullptr;
+                } else {
+                    break; // stop if node still needed
+                }
+            }
+        }
+    }
+    int maxXor(const int& x) {
+        TrieNode* cur = root;
+        int y = 0;
+        for (int i = 31; i >= 0; i--) {
+            int bit = ((x >> i) & 1) ^ 1; // prefer opposite bit
+            if (cur->child[bit]) {
+                cur = cur->child[bit];
+                if (bit) y |= (1 << i);
+            }
+            else if (cur->child[bit ^ 1]) {
+                cur = cur->child[bit ^ 1];
+                if (bit ^ 1) y |= (1 << i);
+            }
+            else break;
+        }
+        return x ^ y;
+    }
+};
+```
+11) To find the longest balanced bracket subsequence, use `Segment tree` with these join relations $(a_1, b_1, c_1)$, $(a_2, b_2, c_2)$ (b -> cnt of open unused bracket, c -> cnt of closed unused bracket) $t = \min(b_1, c_2), a = a_1 + a_2 + 2 * t, b = b_1 + b_2 - t, c = c_1 + c_2 - t$. 
 # Other concepts
 ## Difference array
+## Trie
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct TrieNode {
+    TrieNode* child[2];
+    int leaf_cnt;
+    TrieNode() {
+        leaf_cnt = 0;
+        child[0] = nullptr;
+        child[1] = nullptr;
+    }
+};
+
+class Trie {
+private:
+    TrieNode* root;
+public:
+    Trie() {
+        root = new TrieNode();
+    }
+    // assuming 32 bit int
+    void insert(const int& x) {
+        TrieNode* cur = root;
+        for (int i = 31; i >= 0; i--) {
+            int bit = (x >> i) & 1;
+            if (!cur->child[bit])
+                cur->child[bit] = new TrieNode();
+            cur = cur->child[bit];
+        }
+        (cur->leaf_cnt)++;
+    }
+    void remove(const int& x) {
+        TrieNode* cur = root;
+        TrieNode* path[32];  // store path for backtracking
+        int bits[32];        // store bits along the path
+        for (int i = 31; i >= 0; i--) {
+            int bit = (x >> i) & 1;
+            if (!cur->child[bit]) return; // x not present
+            path[i] = cur;                // parent at this level
+            bits[i] = bit;
+            cur = cur->child[bit];
+        }
+        cur->leaf_cnt--;
+        // cleanup if leaf_cnt == 0
+        if (cur->leaf_cnt == 0) {
+            for (int i = 0; i <= 31; i++) {
+                TrieNode* parent = path[i];
+                int bit = bits[i];
+                TrieNode* node = parent->child[bit];
+                // only delete if node has no children and leaf_cnt == 0
+                if (node->leaf_cnt == 0 && !node->child[0] && !node->child[1]) {
+                    delete node;
+                    parent->child[bit] = nullptr;
+                } else {
+                    break; // stop if node still needed
+                }
+            }
+        }
+    }
+    int maxXor(const int& x) {
+        TrieNode* cur = root;
+        int y = 0;
+        for (int i = 31; i >= 0; i--) {
+            int bit = ((x >> i) & 1) ^ 1; // prefer opposite bit
+            if (cur->child[bit]) {
+                cur = cur->child[bit];
+                if (bit) y |= (1 << i);
+            }
+            else if (cur->child[bit ^ 1]) {
+                cur = cur->child[bit ^ 1];
+                if (bit ^ 1) y |= (1 << i);
+            }
+            else break;
+        }
+        return x ^ y;
+    }
+};
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    int q; std::cin >> q;
+    Trie* myTrie = new Trie();
+    myTrie->insert(0);
+    while (q--) {
+        char op; int x;
+        std::cin >> op >> x;
+        if (op == '+') myTrie->insert(x);
+        else if (op == '-') myTrie->remove(x);
+        else std::cout << myTrie->maxXor(x) << '\n';
+    }
+    return 0;
+}
+```
 
 # Other templates
 ### Inversion count -> Merge sort -> O(NlogN)

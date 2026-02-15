@@ -857,7 +857,7 @@ public:
     }
 };
 ```
-11) To find the longest balanced bracket subsequence, use `Segment tree` with these join relations $(a_1, b_1, c_1)$, $(a_2, b_2, c_2)$ (b -> cnt of open unused bracket, c -> cnt of closed unused bracket) $t = \min(b_1, c_2), a = a_1 + a_2 + 2 * t, b = b_1 + b_2 - t, c = c_1 + c_2 - t$. 
+11) To find the **longest balanced bracket subsequence**, use `Segment tree` with these join relations $(a_1, b_1, c_1)$, $(a_2, b_2, c_2)$ (b -> cnt of open unused bracket, c -> cnt of closed unused bracket) $t = \min(b_1, c_2), a = a_1 + a_2 + 2 * t, b = b_1 + b_2 - t, c = c_1 + c_2 - t$. 
 # Other templates
 ### Inversion count -> Merge sort -> O(NlogN)
 ```cpp
@@ -980,5 +980,113 @@ vector<Interval> mergeIntervals(vector<Interval>& intervals) {
         }
     }
     return merged;
+}
+```
+### DSU
+```cpp
+class UnionFind {
+private:
+    int n;
+    std::vector<int> sz;
+    std::vector<int> id;
+    int numComponents;
+    std::unordered_set<int> roots;
+public:
+    UnionFind(int size) {
+        if (size <= 0) {
+            std::cout << "Illegal\n";
+            exit(1);
+        }
+        n = numComponents = size;
+        sz.resize(size);
+        id.resize(size);
+        for (int i = 0; i < size; ++i) {
+            id[i] = i;
+            sz[i] = 1;
+            roots.insert(i);
+        }
+    }
+    int find(int p) {
+        int root = p;
+        while (root != id[root]) root = id[root];
+        while (p != root) {
+            int next = id[p];
+            id[p] = root;
+            p = next;
+        }
+        return root;
+    }
+    bool isConnected(int p, int q) { return find(p) == find(q); }
+    int componentSize(int p) { return sz[find(p)]; }
+    int size() { return n; }
+    int components() { return numComponents; }
+    const std::unordered_set<int>& getRoots() const { return roots; }
+    void unify(int p, int q) {
+        int root1 = find(p), root2 = find(q);
+        if (root1 == root2) return;
+        if (sz[root1] < sz[root2]) {
+            sz[root2] += sz[root1];
+            id[root1] = root2;
+            roots.erase(root1);
+        } else {
+            sz[root1] += sz[root2];
+            id[root2] = root1;
+            roots.erase(root2);
+        }
+        numComponents--;
+    }
+};
+```
+### KMP search
+```cpp
+// Build longest prefix-suffix (LPS) array for KMP
+std::vector<int> buildLPS(const std::string& pattern) {
+    int m = pattern.size();
+    std::vector<int> lps(m, 0);
+    int len = 0; // length of previous longest prefix suffix
+    int i = 1;
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+    return lps;
+}
+
+// Count occurrences of hay in parent using KMP
+int countOccurrences(const std::string& parent, const std::string& hay) {
+    if (hay.empty() || parent.empty()) return 0;
+    int n = parent.size();
+    int m = hay.size();
+    vector<int> lps = buildLPS(hay);
+    int i = 0; // index for parent
+    int j = 0; // index for hay
+    int count = 0;
+    while (i < n) {
+        if (parent[i] == hay[j]) {
+            i++;
+            j++;
+        }
+        if (j == m) {
+            count++;        // found one occurrence
+            j = lps[j - 1]; // continue searching
+        } else if (i < n && parent[i] != hay[j]) {
+            if (j != 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+    }
+    return count;
 }
 ```
